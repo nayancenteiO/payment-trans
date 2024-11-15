@@ -509,7 +509,7 @@ export default function Component() {
   const [translations, setTranslations] = React.useState<{ [key: string]: string }>({})
   const [selectedTab, setSelectedTab] = React.useState<'text' | 'images'>('text')
   const [sourceLanguage, setSourceLanguage] = React.useState('English')
-  const [targetLanguages, setTargetLanguages] = React.useState(['Spanish', 'French'])
+  const [targetLanguages, setTargetLanguages] = React.useState(['Spanish', 'French',"Afrikaans"])
   const [isHistoryOpen, setIsHistoryOpen] = React.useState(false)
   const [isFavoriteOpen, setIsFavoriteOpen] = React.useState(false)
   const [translationLoading, setTranslationLoading] = React.useState<{ [key: string]: boolean }>({})
@@ -745,9 +745,9 @@ export default function Component() {
             </div>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             {/* Source language card */}
-            <div className="col-span-full">
+            {/* <div className="col-span-full"> */}
               <TranslationCard
                 language={sourceLanguage}
                 loading={loading}
@@ -759,10 +759,10 @@ export default function Component() {
                 onTranslate={handleTranslate}
                 isTranslating={isTranslating}
               />
-            </div>
+            {/* </div> */}
 
             {/* Target language cards - 2 per row */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-2 gap-4"> */}
               {targetLanguages.map((lang, index) => (
                 <TranslationCard
                   key={lang}
@@ -777,10 +777,12 @@ export default function Component() {
                   excludeLanguages={[sourceLanguage, ...targetLanguages.filter((_, i) => i !== index)]}
                 />
               ))}
-            </div>
+            {/* </div> */}
   
-            {/* Add Language button */}
-            {targetLanguages.length < ALL_LANGUAGES.length - 1 && (
+            
+          </div>
+          {/* Add Language button */}
+          {targetLanguages.length < ALL_LANGUAGES.length - 1 && (
               <div className="flex justify-center mt-4">
                 <Button 
                   variant="outline" 
@@ -792,7 +794,6 @@ export default function Component() {
                 </Button>
               </div>
             )}
-          </div>
         </main>
       </div>
     </div>
