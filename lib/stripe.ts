@@ -11,7 +11,7 @@ if (!stripeSecretKey) {
 }
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2024-10-28.acacia',
+  apiVersion: '2024-10-28.acacia', // Keeping the original version as it's expected by types
   typescript: true,
 });
 

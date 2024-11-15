@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "./CheckoutForm";
-import { STRIPE_PUBLISHABLE_KEY } from "@/lib/stripe";
+import { STRIPE_PUBLISHABLE_KEY } from "../../lib/stripe";
 import "./payment.css";
 
 // Initialize Stripe
@@ -36,23 +36,25 @@ export default function PaymentPage() {
           throw new Error('Invalid plan price');
         }
 
-        // Create PaymentIntent
+        // Create PaymentIntent with better error handling
         const response = await fetch("/api/create-payment-intent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             amount,
-            planId: plan.id
+            planId: plan.id || 'default_plan' // Ensure planId is never undefined
           }),
         });
 
         const data = await response.json();
 
         if (!response.ok) {
+          console.error('Payment intent creation failed:', data);
           throw new Error(data.error || data.details || 'Failed to create payment intent');
         }
 
         if (!data.clientSecret) {
+          console.error('No client secret in response:', data);
           throw new Error('No client secret received from the server');
         }
 

@@ -17,17 +17,23 @@ export async function POST(req: Request) {
     }
 
     try {
-      // Create a PaymentIntent with the minimum required fields
+      // Create a PaymentIntent with automatic payment methods enabled
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency: 'usd',
-        payment_method_types: ['card'],
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        metadata: {
+          planId: planId
+        }
       });
 
       console.log('Payment intent created successfully:', paymentIntent.id);
 
       return NextResponse.json({ 
-        clientSecret: paymentIntent.client_secret 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id // For debugging purposes
       });
     } catch (stripeError: any) {
       console.error('Stripe API Error:', {
