@@ -17,13 +17,18 @@ export async function POST(req: Request) {
     }
 
     try {
-      // Create a PaymentIntent with automatic payment methods enabled
+      // Create a PaymentIntent with specific payment method types
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency: 'usd',
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        payment_method_types: [
+          'card',
+          'afterpay_clearpay',
+          'klarna',
+          'affirm',
+          'cashapp',
+          'us_bank_account'
+        ],
         metadata: {
           planId: planId
         }
@@ -33,7 +38,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({ 
         clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id // For debugging purposes
+        paymentIntentId: paymentIntent.id
       });
     } catch (stripeError: any) {
       console.error('Stripe API Error:', {

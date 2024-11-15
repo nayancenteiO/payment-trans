@@ -32,12 +32,15 @@ export default function CheckoutForm() {
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/payment-success`,
+          payment_method_data: {
+            billing_details: {
+              name: 'Test User',
+              email: 'test@example.com'
+            }
+          }
         },
       });
 
-      // This point will only be reached if there is an immediate error when
-      // confirming the payment. Otherwise, your customer will be redirected to
-      // your `return_url`.
       if (error) {
         if (error.type === "card_error" || error.type === "validation_error") {
           setMessage(error.message);
@@ -60,7 +63,20 @@ export default function CheckoutForm() {
         id="payment-element" 
         className="mb-6"
         options={{
-          layout: "tabs",
+          layout: {
+            type: 'tabs',
+            defaultCollapsed: false,
+            radios: true,
+            spacedAccordionItems: false
+          },
+          paymentMethodOrder: [
+            'card',
+            'afterpay_clearpay',
+            'klarna',
+            'affirm',
+            'cashapp',
+            'us_bank_account'
+          ],
           defaultValues: {
             billingDetails: {
               name: 'Test User',

@@ -10,6 +10,40 @@ import "./payment.css";
 // Initialize Stripe
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
+// Stripe Elements appearance configuration
+const appearance = {
+  theme: 'stripe',
+  variables: {
+    colorPrimary: '#0066cc',
+    colorBackground: '#ffffff',
+    colorText: '#30313d',
+    colorDanger: '#df1b41',
+    fontFamily: 'system-ui, sans-serif',
+    spacingUnit: '4px',
+    borderRadius: '4px',
+  },
+  rules: {
+    '.Tab': {
+      border: '1px solid #e0e0e0',
+      boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+    },
+    '.Tab:hover': {
+      color: '#0066cc',
+    },
+    '.Tab--selected': {
+      borderColor: '#0066cc',
+      color: '#0066cc',
+    },
+    '.Input': {
+      border: '1px solid #e0e0e0',
+      boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+    },
+    '.Input:focus': {
+      borderColor: '#0066cc',
+    },
+  },
+};
+
 export default function PaymentPage() {
   const [clientSecret, setClientSecret] = useState("");
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -36,13 +70,13 @@ export default function PaymentPage() {
           throw new Error('Invalid plan price');
         }
 
-        // Create PaymentIntent with better error handling
+        // Create PaymentIntent
         const response = await fetch("/api/create-payment-intent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             amount,
-            planId: plan.id || 'default_plan' // Ensure planId is never undefined
+            planId: plan.id
           }),
         });
 
@@ -112,15 +146,18 @@ export default function PaymentPage() {
         </p>
       </div>
       {clientSecret ? (
-        <Elements stripe={stripePromise} options={{
-          clientSecret,
-          appearance: {
-            theme: 'stripe',
-            variables: {
-              colorPrimary: '#0066cc',
-            },
-          }
-        }}>
+        <Elements 
+          stripe={stripePromise} 
+          options={{
+            clientSecret,
+            appearance,
+            loader: 'always',
+            paymentMethodConfiguration: {
+              card: { allowedCountries: ['US'] },
+              us_bank_account: { allowedCountries: ['US'] }
+            }
+          }}
+        >
           <CheckoutForm />
         </Elements>
       ) : (
