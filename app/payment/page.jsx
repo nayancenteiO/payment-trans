@@ -7,45 +7,13 @@ import CheckoutForm from "./CheckoutForm";
 import { STRIPE_PUBLISHABLE_KEY } from "../../lib/stripe";
 import "./payment.css";
 
-// Initialize Stripe
+// Make sure to call loadStripe outside of a component's render to avoid
+// recreating the Stripe object on every render.
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
-
-// Stripe Elements appearance configuration
-const appearance = {
-  theme: 'stripe',
-  variables: {
-    colorPrimary: '#0066cc',
-    colorBackground: '#ffffff',
-    colorText: '#30313d',
-    colorDanger: '#df1b41',
-    fontFamily: 'system-ui, sans-serif',
-    spacingUnit: '4px',
-    borderRadius: '4px',
-  },
-  rules: {
-    '.Tab': {
-      border: '1px solid #e0e0e0',
-      boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
-    },
-    '.Tab:hover': {
-      color: '#0066cc',
-    },
-    '.Tab--selected': {
-      borderColor: '#0066cc',
-      color: '#0066cc',
-    },
-    '.Input': {
-      border: '1px solid #e0e0e0',
-      boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
-    },
-    '.Input:focus': {
-      borderColor: '#0066cc',
-    },
-  },
-};
 
 export default function PaymentPage() {
   const [clientSecret, setClientSecret] = useState("");
+  const [dpmCheckerLink, setDpmCheckerLink] = useState("");
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -93,6 +61,7 @@ export default function PaymentPage() {
         }
 
         setClientSecret(data.clientSecret);
+        setDpmCheckerLink(data.dpmCheckerLink);
       } catch (err) {
         console.error('Payment initialization error:', err);
         setError(err.message || 'An error occurred while setting up the payment.');
@@ -103,6 +72,19 @@ export default function PaymentPage() {
 
     initializePayment();
   }, []);
+
+  const appearance = {
+    theme: 'stripe',
+    variables: {
+      colorPrimary: '#0066cc',
+      colorBackground: '#ffffff',
+      colorText: '#30313d',
+      colorDanger: '#df1b41',
+      fontFamily: 'system-ui, sans-serif',
+      spacingUnit: '4px',
+      borderRadius: '4px',
+    }
+  };
 
   if (error) {
     return (
@@ -145,26 +127,17 @@ export default function PaymentPage() {
           Price: ${selectedPlan.price}/month
         </p>
       </div>
-      {clientSecret ? (
+      {clientSecret && (
         <Elements 
           stripe={stripePromise} 
           options={{
             clientSecret,
             appearance,
-            loader: 'always',
-            paymentMethodConfiguration: {
-              card: { allowedCountries: ['US'] },
-              us_bank_account: { allowedCountries: ['US'] }
-            }
+            loader: 'auto'
           }}
         >
-          <CheckoutForm />
+          <CheckoutForm dpmCheckerLink={dpmCheckerLink} />
         </Elements>
-      ) : (
-        <div className="text-center p-4 bg-blue-50 rounded-lg">
-          <div className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full mr-2"></div>
-          <span className="text-blue-600">Initializing payment form...</span>
-        </div>
       )}
     </div>
   );

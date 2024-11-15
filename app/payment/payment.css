@@ -1,119 +1,171 @@
-.stripe-form {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
 /* Stripe Elements container */
-.stripe-form #payment-element {
+#payment-element {
   margin-bottom: 24px;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-/* Payment tabs styling */
-.stripe-form .Tab {
-  padding: 12px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.stripe-form .Tab--selected {
-  background-color: #f8fafc;
-}
-
-/* Input fields styling */
-.stripe-form .Input {
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
-  transition: all 0.2s ease;
-}
-
-.stripe-form .Input:focus {
-  border-color: #0066cc;
-  box-shadow: 0 0 0 1px #0066cc;
 }
 
 /* Loading spinner */
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+.spinner,
+.spinner:before,
+.spinner:after {
   border-radius: 50%;
-  border-top-color: #ffffff;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
 }
 
-@keyframes spin {
-  to {
+.spinner {
+  color: #ffffff;
+  font-size: 22px;
+  text-indent: -99999px;
+  margin: 0px auto;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  box-shadow: inset 0 0 0 2px;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.spinner:before,
+.spinner:after {
+  position: absolute;
+  content: "";
+}
+
+.spinner:before {
+  width: 10.4px;
+  height: 20.4px;
+  background: #5469d4;
+  border-radius: 20.4px 0 0 20.4px;
+  top: -0.2px;
+  left: -0.2px;
+  -webkit-transform-origin: 10.4px 10.2px;
+  transform-origin: 10.4px 10.2px;
+  -webkit-animation: loading 2s infinite ease 1.5s;
+  animation: loading 2s infinite ease 1.5s;
+}
+
+.spinner:after {
+  width: 10.4px;
+  height: 10.2px;
+  background: #5469d4;
+  border-radius: 0 10.2px 10.2px 0;
+  top: -0.1px;
+  left: 10.2px;
+  -webkit-transform-origin: 0px 10.2px;
+  transform-origin: 0px 10.2px;
+  -webkit-animation: loading 2s infinite ease;
+  animation: loading 2s infinite ease;
+}
+
+@keyframes loading {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
   }
 }
 
-/* Payment method icons */
-.stripe-form .PaymentMethodIcon {
-  width: 40px;
-  height: 26px;
-  margin-right: 12px;
+/* Stripe Elements theme overrides */
+.StripeElement {
+  border-radius: 4px;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  /* max-height: 44px; */
+  width: 100%;
+  background: white;
+  box-sizing: border-box;
 }
 
-/* Payment method labels */
-.stripe-form .Label {
-  font-size: 14px;
-  color: #1f2937;
-  margin-bottom: 4px;
+.StripeElement--focus {
+  box-shadow: 0 1px 3px 0 #cfd7df;
 }
 
-/* Error messages */
-.stripe-form .Error {
-  color: #df1b41;
-  font-size: 14px;
-  margin-top: 4px;
+.StripeElement--invalid {
+  border-color: #fa755a;
 }
 
-/* Payment button */
-.stripe-form button {
-  background-color: #0066cc;
-  color: white;
-  padding: 12px 24px;
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important;
+}
+
+/* DPM Annotation styles */
+#dpm-annotation {
+  margin-top: 24px;
+  padding: 12px;
   border-radius: 6px;
-  border: none;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+#dpm-annotation a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+#dpm-annotation a:hover {
+  color: #1d4ed8;
+}
+
+/* Payment form container */
+#payment-form {
+  width: 100%;
+  min-width: 320px;
+  align-self: center;
+  border-radius: 7px;
+  padding: 20px;
+  box-shadow: 0px 0px 0px 0.5px rgba(50, 50, 93, 0.1),
+    0px 2px 5px 0px rgba(50, 50, 93, 0.1), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.07);
+  background-color: white;
+}
+
+/* Payment message styles */
+#payment-message {
+  color: rgb(105, 115, 134);
+  font-size: 16px;
+  line-height: 20px;
+  padding-top: 12px;
+  text-align: center;
+}
+
+/* Submit button styles */
+#submit {
+  background: #5469d4;
+  color: #ffffff;
+  border-radius: 4px;
+  border: 0;
+  padding: 12px 16px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  display: block;
+  transition: all 0.2s ease;
+  box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
   width: 100%;
-  transition: background-color 0.2s ease;
 }
 
-.stripe-form button:hover:not(:disabled) {
-  background-color: #0052a3;
+#submit:hover {
+  filter: contrast(115%);
 }
 
-.stripe-form button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+#submit:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
-/* Payment methods grid */
-.stripe-form .PaymentMethodsContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
+/* Tab content animations */
+.TabContent {
+  animation: appear 200ms ease;
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .stripe-form {
-    padding: 16px;
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
-  
-  .stripe-form .PaymentMethodsContainer {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
