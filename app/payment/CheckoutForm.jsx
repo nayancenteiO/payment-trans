@@ -63,15 +63,6 @@ export default function CheckoutForm({ dpmCheckerLink }) {
         {/* Show any error or success messages */}
         {message && <div id="payment-message" className="mt-4 p-3 bg-red-50 text-red-500 rounded-lg text-center">{message}</div>}
       </form>
-      {/* Display dynamic payment methods annotation and integration checker */}
-      <div id="dpm-annotation" className="mt-6 text-sm text-gray-600 text-center">
-        <p>
-          Payment methods are dynamically displayed based on customer location, order amount, and currency.&nbsp;
-          <a href={dpmCheckerLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">
-            Preview payment methods by transaction
-          </a>
-        </p>
-      </div>
     </>
   );
 }
