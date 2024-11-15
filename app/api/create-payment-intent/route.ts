@@ -1,62 +1,53 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '../../../lib/stripe';
 
-const PLAN_DESCRIPTIONS = {
-  basic: 'Basic Plan - Up to 1,000 translations/month',
-  pro: 'Professional Plan - Unlimited translations with priority support',
-  enterprise: 'Enterprise Plan - Full feature access with dedicated support',
-};
-
 export async function POST(req: Request) {
   try {
-    const { amount, email, name, planId } = await req.json();
+    const body = await req.json();
+    console.log('Request body:', body);
+    
+    const { amount, planId } = body;
 
-    // Create a PaymentIntent with the specified amount and customer details
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount, // amount in cents
-      currency: 'usd',
-      payment_method_types: ['card'],
-      metadata: {
-        product: 'VTranslate Subscription',
-        plan: planId,
-        customerName: name,
-        customerEmail: email,
-      },
-      receipt_email: email,
-      description: PLAN_DESCRIPTIONS[planId as keyof typeof PLAN_DESCRIPTIONS] || 'VTranslate Subscription',
-      setup_future_usage: 'off_session', // Enable future subscription payments
-    });
-
-    // Create or update customer in Stripe
-    let customer = await stripe.customers.list({
-      email,
-      limit: 1,
-    });
-
-    if (customer.data.length === 0) {
-      await stripe.customers.create({
-        email,
-        name,
-        metadata: {
-          planId,
-        },
-      });
-    } else {
-      await stripe.customers.update(customer.data[0].id, {
-        name,
-        metadata: {
-          planId,
-        },
-      });
+    if (!amount || !planId) {
+      console.error('Missing required fields:', { amount, planId });
+      return NextResponse.json(
+        { error: 'Missing required fields: amount and planId are required' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ 
-      clientSecret: paymentIntent.client_secret 
-    });
-  } catch (error) {
-    console.error('Error:', error);
+    try {
+      // Create a PaymentIntent with the minimum required fields
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount,
+        currency: 'usd',
+        payment_method_types: ['card'],
+      });
+
+      console.log('Payment intent created successfully:', paymentIntent.id);
+
+      return NextResponse.json({ 
+        clientSecret: paymentIntent.client_secret 
+      });
+    } catch (stripeError: any) {
+      console.error('Stripe API Error:', {
+        type: stripeError.type,
+        message: stripeError.message,
+        code: stripeError.code,
+      });
+      
+      return NextResponse.json(
+        { 
+          error: 'Failed to create payment intent',
+          details: stripeError.message
+        }, 
+        { status: 500 }
+      );
+    }
+  } catch (error: any) {
+    console.error('General error:', error);
     return NextResponse.json(
-      { error: 'Error creating payment intent' }, 
+      { error: 'Error processing request' }, 
       { status: 500 }
     );
   }

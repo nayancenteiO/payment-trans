@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -503,7 +504,7 @@ const FavoriteDrawer = React.memo(function FavoriteDrawer({ onClose, onRemoveFav
 })
 
 export default function Component() {
-  
+  const router = useRouter()
   const { translate, loading, error } = useTranslation()
   const [translations, setTranslations] = React.useState<{ [key: string]: string }>({})
   const [selectedTab, setSelectedTab] = React.useState<'text' | 'images'>('text')
@@ -513,7 +514,7 @@ export default function Component() {
   const [isFavoriteOpen, setIsFavoriteOpen] = React.useState(false)
   const [translationLoading, setTranslationLoading] = React.useState<{ [key: string]: boolean }>({})
   const [isTranslating, setIsTranslating] = React.useState(false)
-  const [showPayment, setShowPayment] = React.useState(false)
+  // const [showPayment, setShowPayment] = React.useState(false)
 
   const translateText = React.useCallback(async (text: string, targetLang: string) => {
     try {
@@ -679,23 +680,15 @@ export default function Component() {
               <SelectItem value="GPT-3">GPT-3</SelectItem>
             </SelectContent>
           </Select>
-          <Sheet open={showPayment} onOpenChange={setShowPayment}>
-            <SheetTrigger asChild>
-              <Button variant="default" size="sm" className="gap-2">
-                <Zap className="h-4 w-4" />
-                Subscribe
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <div className="flex flex-col gap-4">
-                <h2 className="text-lg font-semibold">Subscribe to VTranslate Pro</h2>
-                <p className="text-sm text-muted-foreground">
-                  Get unlimited translations and access to all premium features.
-                </p>
-                <PaymentForm />
-              </div>
-            </SheetContent>
-          </Sheet>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="gap-2"
+            onClick={() => router.push('/pricing')}
+          >
+            <Zap className="h-4 w-4" />
+            Subscribe
+          </Button>
         </div>
       </header>
 

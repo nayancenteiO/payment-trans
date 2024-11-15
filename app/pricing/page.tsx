@@ -5,17 +5,6 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, Zap } from 'lucide-react';
-import {
-  Elements,
-  CardElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface Plan {
   id: string;
@@ -66,183 +55,25 @@ const plans: Plan[] = [
   },
 ];
 
-function PaymentForm({ 
-  plan, 
-  onSuccess,
-  onCancel 
-}: { 
-  plan: Plan;
-  onSuccess: () => void;
-  onCancel: () => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+export default function PricingPage() {
+  const router = useRouter();
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
+  const handleGetStarted = (plan: Plan) => {
     try {
-      const response = await fetch('/api/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(plan.price * 100),
-          email,
-          name,
-          planId: plan.id,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create payment');
-      }
-
-      const { clientSecret } = await response.json();
-
-      const { error: submitError } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement)!,
-          billing_details: {
-            name,
-            email,
-          },
-        }
-      });
-
-      if (submitError) {
-        setError(submitError.message || 'An error occurred while processing your payment.');
-      } else {
-        onSuccess();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
+      // Store plan details in localStorage
+      localStorage.setItem('selectedPlan', JSON.stringify({
+        id: plan.id,
+        name: plan.name,
+        price: plan.price
+      }));
+      
+      // Redirect to payment page
+      router.push('/payment');
+    } catch (error) {
+      console.error('Error storing plan data:', error);
+      alert('An error occurred. Please try again.');
     }
   };
-
-  return (
-    <Card className="p-6 mt-8">
-      <h3 className="text-lg font-semibold mb-4">Complete your {plan.name} subscription</h3>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="John Doe"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john@example.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="card">Card Details</Label>
-            <div className="border rounded-md p-3">
-              <CardElement
-                options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#424770',
-                      '::placeholder': {
-                        color: '#aab7c4',
-                      },
-                    },
-                    invalid: {
-                      color: '#9e2146',
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {error && (
-          <div className="text-red-500 text-sm mt-2">
-            {error}
-          </div>
-        )}
-
-        <div className="flex gap-4">
-          <Button
-            type="submit"
-            disabled={!stripe || loading}
-            className="flex-1"
-          >
-            {loading ? 'Processing...' : `Pay $${plan.price}/month`}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
-        </div>
-
-        <p className="text-xs text-center text-gray-500">
-          Your payment is secured by Stripe
-        </p>
-      </form>
-    </Card>
-  );
-}
-
-function ThankYouMessage() {
-  const router = useRouter();
-  
-  return (
-    <div className="text-center py-12 px-4">
-      <div className="mb-4">
-        <div className="h-16 w-16 rounded-full bg-green-100 mx-auto flex items-center justify-center">
-          <Check className="h-8 w-8 text-green-600" />
-        </div>
-      </div>
-      <h2 className="text-2xl font-bold mb-2">Thank You for Your Subscription!</h2>
-      <p className="text-gray-600 mb-4">
-        Your payment has been processed successfully. You now have access to all premium features.
-      </p>
-      <Button onClick={() => router.push('/')}>
-        Return to Dashboard
-      </Button>
-    </div>
-  );
-}
-
-export default function PricingPage() {
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [showThankYou, setShowThankYou] = useState(false);
-
-  if (showThankYou) {
-    return <ThankYouMessage />;
-  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -284,7 +115,7 @@ export default function PricingPage() {
             <Button
               className="w-full"
               variant={plan.popular ? 'default' : 'outline'}
-              onClick={() => setSelectedPlan(plan)}
+              onClick={() => handleGetStarted(plan)}
             >
               {plan.popular && <Zap className="h-4 w-4 mr-2" />}
               Get Started
@@ -292,16 +123,6 @@ export default function PricingPage() {
           </Card>
         ))}
       </div>
-
-      {selectedPlan && (
-        <Elements stripe={stripePromise}>
-          <PaymentForm
-            plan={selectedPlan}
-            onSuccess={() => setShowThankYou(true)}
-            onCancel={() => setSelectedPlan(null)}
-          />
-        </Elements>
-      )}
     </div>
   );
 }
