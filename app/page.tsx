@@ -38,7 +38,7 @@ import {
   X, 
   Search,
   Mic,
-  Volume2
+  Volume2, User, LogOut
 } from 'lucide-react'
 import { useTranslation } from "@/hooks/use-translation"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -503,6 +503,37 @@ const FavoriteDrawer = React.memo(function FavoriteDrawer({ onClose, onRemoveFav
   )
 })
 
+// User profile type
+interface UserProfile {
+  email: string;
+  name: string;
+  provider: string;
+}
+
+// Function to get user profile from local storage
+const getUserProfile = (): UserProfile | null => {
+  if (typeof window !== 'undefined') {
+    const profile = localStorage.getItem('currentUser');
+    if (profile) {
+      return JSON.parse(profile);
+    }
+  }
+  return null;
+};
+
+// Function to set user profile in local storage
+const setUserProfile = (profile: UserProfile) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('currentUser', JSON.stringify(profile));
+  }
+};
+// Function to remove user profile from local storage
+const removeUserProfile = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('currentUser');
+  }
+};
+
 export default function Component() {
   const router = useRouter()
   const { translate, loading, error } = useTranslation()
@@ -515,6 +546,34 @@ export default function Component() {
   const [translationLoading, setTranslationLoading] = React.useState<{ [key: string]: boolean }>({})
   const [isTranslating, setIsTranslating] = React.useState(false)
   // const [showPayment, setShowPayment] = React.useState(false)
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false)
+  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(getUserProfile())
+
+   // Function to update user profile
+   const updateProfile = (newProfile: Partial<UserProfile>) => {
+    if (userProfile) {
+      const updatedProfile = { ...userProfile, ...newProfile };
+      setUserProfile(updatedProfile);
+      setUserProfile(updatedProfile);
+    }
+  };
+
+  React.useEffect(() => {
+    const profile = getUserProfile();
+    if (profile) {
+      setUserProfile(profile);
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
+
+  // Function to handle logout
+  const handleLogout = () => {
+    removeUserProfile();
+    setUserProfile(null);
+    setIsProfileOpen(false);
+    router.push('/login');
+  };
 
   const translateText = React.useCallback(async (text: string, targetLang: string) => {
     try {
@@ -689,6 +748,59 @@ export default function Component() {
             <Zap className="h-4 w-4" />
             Subscribe
           </Button>
+          <Sheet open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <div className="flex flex-col items-center space-y-4 pt-4">
+                <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="h-12 w-12 text-gray-500" />
+                </div>
+                <h2 className="text-xl font-semibold">User Profile</h2>
+                {userProfile ? (
+                  <div className="w-full space-y-2">
+                    <div className="flex justify-between items-center">
+                      <p><strong>Name:</strong></p>
+                      <Input 
+                        value={userProfile.name} 
+                        onChange={(e) => updateProfile({ name: e.target.value })}
+                        className="w-2/3"
+                      />
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p><strong>Email:</strong></p>
+                      <Input 
+                        value={userProfile.email} 
+                        onChange={(e) => updateProfile({ email: e.target.value })}
+                        className="w-2/3"
+                      />
+                    </div>
+                    {/* <p><strong>Provider:</strong> {userProfile.provider}</p> */}
+                  </div>
+                ) : (
+                  <p>No user profile found.</p>
+                )}
+                <Button className="w-full" onClick={() => {
+                  if (userProfile) {
+                    setUserProfile(userProfile);
+                    setIsProfileOpen(false);
+                  }
+                }}>
+                  Save Changes
+                </Button>
+                <Button className="w-full" variant="destructive" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+                {/* <Button className="w-full" variant="outline" onClick={() => router.push('/settings')}>
+                  Account Settings
+                </Button> */}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
@@ -746,54 +858,44 @@ export default function Component() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {/* Source language card */}
-            {/* <div className="col-span-full"> */}
+            <TranslationCard
+              language={sourceLanguage}
+              loading={loading}
+              error={error?.message}
+              placeholder="Enter text"
+              onLanguageChange={handleSourceLanguageChange}
+              excludeLanguages={targetLanguages}
+              isSource
+              onTranslate={handleTranslate}
+              isTranslating={isTranslating}
+            />
+            {targetLanguages.map((lang, index) => (
               <TranslationCard
-                language={sourceLanguage}
-                loading={loading}
+                key={lang}
+                language={lang}
+                value={translations[lang] || ''}
+                loading={translationLoading[lang]}
                 error={error?.message}
-                placeholder="Enter text"
-                onLanguageChange={handleSourceLanguageChange}
-                excludeLanguages={targetLanguages}
-                isSource
-                onTranslate={handleTranslate}
-                isTranslating={isTranslating}
+                placeholder="Translation"
+                readOnly
+                onLanguageChange={(newLang: string) => handleLanguageChange(index, newLang)}
+                onRemove={() => handleRemoveLanguage(index)}
+                excludeLanguages={[sourceLanguage, ...targetLanguages.filter((_, i) => i !== index)]}
               />
-            {/* </div> */}
-
-            {/* Target language cards - 2 per row */}
-            {/* <div className="grid grid-cols-2 gap-4"> */}
-              {targetLanguages.map((lang, index) => (
-                <TranslationCard
-                  key={lang}
-                  language={lang}
-                  value={translations[lang] || ''}
-                  loading={translationLoading[lang]}
-                  error={error?.message}
-                  placeholder="Translation"
-                  readOnly
-                  onLanguageChange={(newLang: string) => handleLanguageChange(index, newLang)}
-                  onRemove={() => handleRemoveLanguage(index)}
-                  excludeLanguages={[sourceLanguage, ...targetLanguages.filter((_, i) => i !== index)]}
-                />
-              ))}
-            {/* </div> */}
-  
-            
+            ))}
           </div>
-          {/* Add Language button */}
           {targetLanguages.length < ALL_LANGUAGES.length - 1 && (
-              <div className="flex justify-center mt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={handleAddLanguage}
-                  className="w-full max-w-xs"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Language
-                </Button>
-              </div>
-            )}
+            <div className="flex justify-center mt-4">
+              <Button 
+                variant="outline" 
+                onClick={handleAddLanguage}
+                className="w-full max-w-xs"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Language
+              </Button>
+            </div>
+          )}
         </main>
       </div>
     </div>

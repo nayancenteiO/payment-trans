@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,6 +26,7 @@ export default function EnhancedAuthFlow() {
   const [timer, setTimer] = useState(60)
   const { toast } = useToast()
   const otpInputs = useRef<(HTMLInputElement | null)[]>([])
+  const router = useRouter()
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem('currentUser')
@@ -48,8 +50,18 @@ export default function EnhancedAuthFlow() {
     e.preventDefault()
     setIsLoading(true)
     try {
-      // Simulating API call to send OTP
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch('http://188.166.113.178:5000/api/auth/loginWithSignup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send OTP')
+      }
+
       setShowOTPInput(true)
       setTimer(60) // Reset the timer when sending a new OTP
       toast({
@@ -57,6 +69,7 @@ export default function EnhancedAuthFlow() {
         description: "Please check your email for the OTP code.",
       })
     } catch (error) {
+      console.error('Error sending OTP:', error)
       toast({
         title: "Error",
         description: "Failed to send OTP. Please try again.",
@@ -71,15 +84,35 @@ export default function EnhancedAuthFlow() {
     e.preventDefault()
     setIsLoading(true)
     try {
-      // Simulating API call to verify OTP
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch('http://188.166.113.178:5000/api/auth/verifyOtp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          otp: otp.join('')
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to verify OTP')
+      }
+
+      const data = await response.json()
+
+      // Assuming the API returns some user data on successful verification
       const user: User = {
-        email,
-        name: email.split('@')[0],
+        email: email,
+        name: data.name || email.split('@')[0], // Use the name from API response if available
         provider: 'email'
       }
       loginUser(user)
+
+      // Redirect to main page
+      router.push('/') // Adjust this path as needed
     } catch (error) {
+      console.error('Error verifying OTP:', error)
       toast({
         title: "Error",
         description: "Invalid OTP. Please try again.",
@@ -140,6 +173,7 @@ export default function EnhancedAuthFlow() {
 
   if (isLoggedIn && currentUser) {
     return (
+        <div className='flex-center main-height-width'>
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Welcome, {currentUser.name}!</CardTitle>
@@ -147,12 +181,13 @@ export default function EnhancedAuthFlow() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">Email: {currentUser.email}</p>
-          <p className="text-sm text-muted-foreground">Provider: {currentUser.provider}</p>
+          {/* <p className="text-sm text-muted-foreground">Provider: {currentUser.provider}</p> */}
         </CardContent>
         <CardContent>
           <Button onClick={handleLogout} className="w-full">Logout</Button>
         </CardContent>
       </Card>
+      </div>
     )
   }
 
