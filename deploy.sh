@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Export environment variables
+export NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51QKzcxDSLnjOQfn7s1DE4XoAyiofhlYVytCmTszve8BvDhHBY3SgwU3S8jhyB6m6ffmsUDGwMRViBqezV85mMaK900sY16jxpc
+export STRIPE_SECRET_KEY=sk_test_51QKzcxDSLnjOQfn7zEwTgdSFA9AHq4glfmNnALQXIoUM3UPbPNuQueelpoYjrSgliLFbio4TrljYoOCsFBJxkTlE0001F9R7Y5
+
+# Install dependencies
+npm install
+
+# Build the application
+npm run build
+
+# Start the production server
+npm run start
